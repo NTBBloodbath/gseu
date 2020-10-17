@@ -13,6 +13,16 @@ The name means "**G**em **Se**arch & **U**ninstall".
 Since it's just a BASH script, you just need
 to place it inside your bin folder to use it.
 
+```sh
+# Download the gseu file and make it executable
+curl -L "https://git.io/JTcu6" > gseu && chmod +x gseu
+
+# Move it somewhere in your $PATH. For example, we move it to the bin folder.
+sudo mv gseu /usr/bin/
+```
+
+---
+
 ## Usage
 This is a usage example, for more information, use
 the help command or run the script without any arguments.
@@ -34,7 +44,8 @@ gseu -u sinatra
 === gseu [2020-10-17 / 11:59:31] Successfully uninstalled sinatra-cross_origin-0.4.0
 ```
 
-> **Note**: If you use Termux (Android), you shouldn't use the `-r` flag as you cannot use sudo.
+> **Note**: If you use Termux (Android), you shouldn't use
+> the `-r` flag as you cannot use sudo.
 
 ---
 

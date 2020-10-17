@@ -1,7 +1,8 @@
 #!/bin/bash
+# 
 # Gseu | NTBBloodbath
 # Search and delete Ruby gems on your terminal.
-
+# 
 #########################
 # Gseu vars
 #########################
@@ -15,7 +16,7 @@ light_green="\e[92m"
 # Normal text
 normal=$(tput sgr0)
 # Gseu version
-version=$(cat ./VERSION)
+version="0.1.0"
 # Gseu flags
 flags=("-r" "-root")
 
