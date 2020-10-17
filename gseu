@@ -60,7 +60,7 @@ gseu_without_flags() {
             if [[ "$3" == "sudo" ]]; then
                 srch=$(sudo gem list $gem_name --local --no-versions)
                 if [[ "${#srch}" == 0 ]]; then
-                    gseu_log "[${light_red}ERROR${normal}]: $gem_name wasn't found."
+                    gseu_log "[${light_green}LOG${normal}]: $gem_name wasn't found."
                 else
                     for gem in $(sudo gem list $gem_name --local --no-versions); do
                         gseu_log "[${light_green}LOG${normal}]: $gem was found."
@@ -70,7 +70,7 @@ gseu_without_flags() {
             elif [[ -z "$3" ]]; then
                 srch=$(gem list $gem_name --local --no-versions)
                 if [[ "${#srch}" == 0 ]]; then
-                    gseu_log "[${light_red}ERROR${normal}]: $gem_name wasn't found."
+                    gseu_log "[${light_green}LOG${normal}]: $gem_name wasn't found."
                 else
                     for gem in $(gem list $gem_name --local --no-versions); do
                         gseu_log "[${light_green}LOG${normal}]: $gem was found."
