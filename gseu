@@ -1,0 +1,164 @@
+#!/bin/bash
+# Gseu | NTBBloodbath
+# Search and delete Ruby gems on your terminal.
+
+#########################
+# Gseu vars
+#########################
+# Bold text
+bold=$(tput bold)
+# Italic text
+dim="\e[2m"
+# Text colours
+light_red="\e[91m"
+light_green="\e[92m"
+# Normal text
+normal=$(tput sgr0)
+# Gseu version
+version=$(cat ./VERSION)
+# Gseu flags
+flags=("-r" "-root")
+
+#########################
+# Gseu functions
+#########################
+# Gseu Help
+gseu_help() {
+    echo -e "${bold}Gseu v${version}${normal}
+${dim}Search and delete Ruby gems on your terminal.${normal}
+===============================================================
+
+${bold}Usage:${normal}
+    gseu [FLAGS] [OPTIONS] [GEM]
+
+${bold}Flags:${normal}
+    -r, --root
+        Use gseu as root user. Don't use if you use Termux.
+
+${bold}Options:${normal}
+    -s, --search <gem>
+        See if the gem exists.
+    -u, --uninstall <gem>
+        Search and remove the gem and/or gems if it exists."
+    exit 1
+}
+
+# Gseu Logs
+gseu_log() {
+    script_name=${0##*/}
+    timestamp=$(date -u +"[${bold}%Y-%m-%d${normal} ${dim}/${normal} ${bold}%H:%M:%S${normal}]")
+    echo -e "${dim}===${normal} ${bold}$script_name${normal} $timestamp $1"
+}
+
+# Gseu execution without flags
+gseu_without_flags() {
+    case $1 in
+        -s | --search )
+            gem_name="$2"
+            # If flag --root was passed then execute search with sudo perms
+            if [[ "$3" == "sudo" ]]; then
+                srch=$(sudo gem list $gem_name --local --no-versions)
+                if [[ "${#srch}" == 0 ]]; then
+                    gseu_log "[${light_red}ERROR${normal}]: $gem_name wasn't found."
+                else
+                    for gem in $(sudo gem list $gem_name --local --no-versions); do
+                        gseu_log "[${light_green}LOG${normal}]: $gem was found."
+                    done
+                fi
+            # If "sudo" wasn't passed to function then do it without root perms.
+            elif [[ -z "$3" ]]; then
+                srch=$(gem list $gem_name --local --no-versions)
+                if [[ "${#srch}" == 0 ]]; then
+                    gseu_log "[${light_red}ERROR${normal}]: $gem_name wasn't found."
+                else
+                    for gem in $(gem list $gem_name --local --no-versions); do
+                        gseu_log "[${light_green}LOG${normal}]: $gem was found."
+                    done
+                fi
+            fi
+            ;;
+        -u | --uninstall )
+            gem_name="$2"
+            # If flag --root was passed then execute uninstall with sudo perms
+            if [[ "$3" == "sudo" ]]; then
+                srch=$(sudo gem list $gem_name --local --no-versions)
+                if [[ "${#srch}" == 0 ]]; then
+                    gseu_log "[${light_red}ERROR${normal}]: $gem_name isn't installed."
+                else
+                    for gem in $(sudo gem list $gem_name --local --no-versions); do
+                        gseu_log "[${light_green}LOG${normal}]: Uninstalling $gem ..."
+                        uninstall=$(sudo gem uninstall $gem -xIa)
+                        gseu_log $uninstall
+                    done
+                fi
+            # If "sudo" wasn't passed to function then do it without root perms.
+            elif [[ -z "$3" ]]; then
+                srch=$(gem list $gem_name --local --no-versions)
+                if [[ "${#srch}" == 0 ]]; then
+                    gseu_log "[${light_red}ERROR${normal}]: $gem_name isn't installed."
+                else
+                    for gem in $(gem list $gem_name --local --no-versions); do
+                        gseu_log "[${light_green}LOG${normal}]: Uninstalling $gem ..."
+                        uninstall=$(gem uninstall $gem -xIa)
+                        gseu_log "$uninstall"
+                    done
+                fi
+            fi
+            ;;
+        -h | --help )
+            gseu_help
+            ;;
+        * )
+            gseu_log "The ${bold}$1${normal} option ${bold}wasn't found.${normal} Please see help."
+            exit 1
+            ;;
+    esac
+    shift
+}
+
+# Gseu execution with flags
+gseu_with_flags() {
+    case $1 in
+        -r | --root )
+            if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+                gseu_without_flags "$2" "$3" "sudo"
+            elif [[ "$OSTYPE" == "darwin"* ]]; then
+                gseu_without_flags "$2" "$3" "sudo"
+            elif [[ "$OSTYPE" == "linux-android" ]]; then
+                gseu_log "You cannot use sudo in Termux."
+                exit 1
+            fi
+            ;;
+        * )
+            gseu_log "The ${bold}$1${normal} flag ${bold}wasn't found.${normal} Please see help."
+            exit 1
+            ;;
+    esac
+    shift
+}
+
+#########################
+# Main Gseu code
+#########################
+# If there's no args then send help.
+if [[ -z "$1" ]]; then
+    gseu_help
+# If there's flags, useful for using gem on Termux cuz it doesn't have sudo.
+elif [[ -n "$1" && -z "$2" ]]; then
+    # If the first parameter is a flag
+    if [[ "${flags[@]}" =~ "$1" ]]; then
+        gseu_log "You can't use the ${bold}$1${normal} flag without establishing an option."
+    else
+        if [[ "$1" != "-h" && "$1" != "--help" ]]; then
+            gseu_log "You can't use the ${bold}$1${normal} option without establishing a gem."
+        else
+            gseu_without_flags "$1"
+        fi
+    fi
+# If there's flag and option or option and no gem
+elif [[ -n "$1" && -n "$2" && -z "$3" ]]; then
+    gseu_without_flags "$1" "$2"
+# If there's flag, option and gem
+else
+    gseu_with_flags "$1" "$2" "$3"
+fi
